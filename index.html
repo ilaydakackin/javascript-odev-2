@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kodluyoruz</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body class="bg-gradient-to-br from-blue-950 to-purple-800 w-screen min-h-screen overflow-x-hidden overflow-y-auto">
+
+  <div class="max-w-2xl w-full bg-white p-14 mt-12 mx-auto rounded-lg shadow-lg shadow-blue-900">
+    <div class="w-full h-36 bg-orange-400 flex items-center justify-center rounded-lg"> <img
+        class="w-[300px] object-cover bg-white rounded-lg" src="/public/images/kodluyoruz.png" alt=""> </div>
+    <div class="todo-app my-8">
+      <div class="flex justify-between">
+        <h2 class="font-bold text-gray-600 text-xl">To-Do List </h2>
+
+        <button class="py-1 px-2 text-xs bg-red-400 text-white rounded clear-all">Hepsini Temizle</button>
+      </div>
+      <div class="row flex items-center justify-between bg-gray-100 rounded-full my-4">
+        <input class="p-4 border-0 outline-0 bg-transparent w-full" type="text" id="input-box"
+          placeholder="Bir İş Ekle">
+        <button type="button" id="add"
+          class=" ps-10 pe-10 py-4 px-4 bg-orange-500 rounded-full text-base font-medium text-white">Ekle</button>
+      </div>
+      <ul class="list-container ps-4 space-y-4 py-2 max-h-[400px] overflow-y-auto pr-1">
+
+      </ul>
+    </div>
+  </div>
+
+  <div class="fixed top-2 right-2 notification-container flex flex-col space-y-4">
+
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+    crossorigin="anonymous"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+
+      const inputBox = document.querySelector('#input-box');
+      const addButton = document.querySelector('#add');
+      const listContainer = document.querySelector('.list-container');
+      const notificationContainer = document.querySelector('.notification-container');
+
+      document.querySelector('.clear-all')?.addEventListener('click', function () {
+        if (listContainer) {
+          listContainer.innerHTML = "";
+          clearData();
+        }
+      })
+
+      render();
+
+      if (addButton && inputBox) {
+        addButton.addEventListener('click', () => {
+          const value = inputBox.value;
+          if (value == '') {
+            alert('Gorev giriniz');
+          } else {
+            if (listContainer) {
+              listContainer.innerHTML = listContainer.innerHTML + renderTodoItemTemplate(value);
+              saveData();
+              render();
+              showNotification("Listeye eklendi");
+              inputBox.value = "";
+            } else {
+              alert('list container bulunamadi');
+            }
+          }
+        });
+      } else {
+        alert('add button ya da input box bulunamadi')
+      }
+
+
+      function saveData() {
+        window.localStorage.setItem("data", listContainer.innerHTML)
+      }
+      function clearData() {
+        window.localStorage.removeItem("data")
+      }
+      function render() {
+        var todoList = window.localStorage.getItem('data');
+        if (todoList && listContainer) {
+          listContainer.innerHTML = todoList;
+          listContainer.querySelectorAll('li .todo-item-check').forEach(todo => {
+            console.log(todo)
+            todo.addEventListener('click', () => {
+              todo.classList.toggle('unchecked');
+              todo.classList.toggle('checked');
+              saveData();
+            })
+
+
+          })
+
+          listContainer.querySelectorAll('li button.clear-todo-item').forEach(button => {
+            console.log(button);
+            button.addEventListener('click', function () {
+              button.parentElement.parentElement.remove();
+              saveData();
+            });
+          })
+        }
+      }
+
+
+      function renderTodoItemTemplate(todoItem, isChecked = false) {
+        return `
+        <li class="flex items-center justify-between w-full">
+          <span class="${isChecked ? 'checked' : 'unchecked'} todo-item-check">${todoItem}</span>
+          <span class="">
+            <button class="clear-todo-item w-6 h-6 rounded-full bg-gray-200 hover:bg-red-500 text-slate-700 hover:text-white transition flex items-center justify-center leading-tight">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
+                <path d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22Z" />
+              </svg>
+            </button>  
+          </span> 
+        </li>
+      `;
+      }
+
+      function showNotification(content = "") {
+        notificationContainer.innerHTML = renderNotificationTemplate(content) + notificationContainer.innerHTML;
+
+        notificationContainer.querySelectorAll('.notification').forEach(notification => {
+          notification.querySelector('.clear-notification-item').addEventListener('click', function () {
+            this.parentElement.parentElement.remove();
+          });
+        })
+
+      }
+
+      function renderNotificationTemplate(content = "") {
+        return `
+        <div class="notification p-2 bg-white border rounded border-slate-400 flex items-start space-x-3">
+          <div class="w-full flex flex-col space-y-1">
+            <span>${content}</span>
+          </div>
+          <div class="flex-shrink-0">
+            <button class="clear-notification-item w-6 h-6 rounded-full bg-gray-200 hover:bg-red-500 text-slate-700 hover:text-white transition flex items-center justify-center leading-tight">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
+                <path d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22Z" />
+              </svg>
+            </button>
+          </div>
+        </div>
+        `;
+      }
+    });
+  </script>
+
+</body>
+
+</html>
